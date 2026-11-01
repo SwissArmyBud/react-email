@@ -1,0 +1,56 @@
+evidence-05: TESTS. The new regression tests fail without the fix and pass with it
+Captured 2026-11-01T19:20:56Z on branch personal/aporter/2611-rem-from-pixelbasedpreset-demo.
+
+## A. Fix removed (borderRadius and maxWidth blocks deleted from pixelBasedPreset): expect failures
+       × converts rounded to pixels 53ms
+       × converts rounded-sm to pixels 3ms
+       × converts rounded-md to pixels 3ms
+       × converts rounded-lg to pixels 2ms
+       × converts rounded-4xl to pixels 3ms
+       × converts max-w-md to pixels 2ms
+       × converts max-w-7xl to pixels 2ms
+       × does not leave rem in the radius or max-width scales 2ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  src/components/tailwind/tailwind.spec.tsx > Tailwind component > with pixelBasedPreset > converts rounded to pixels
+ FAIL  src/components/tailwind/tailwind.spec.tsx > Tailwind component > with pixelBasedPreset > converts rounded-sm to pixels
+AssertionError: expected 'border-radius:0.25rem' to be 'border-radius:4px' // Object.is equality
+    1480|     ])('converts %s to pixels', async (className, expected) => {
+    1481|       expect(await styleFor(className)).toBe(expected);
+ FAIL  src/components/tailwind/tailwind.spec.tsx > Tailwind component > with pixelBasedPreset > converts rounded-md to pixels
+AssertionError: expected 'border-radius:0.375rem' to be 'border-radius:6px' // Object.is equality
+    1480|     ])('converts %s to pixels', async (className, expected) => {
+    1481|       expect(await styleFor(className)).toBe(expected);
+ FAIL  src/components/tailwind/tailwind.spec.tsx > Tailwind component > with pixelBasedPreset > converts rounded-lg to pixels
+AssertionError: expected 'border-radius:0.5rem' to be 'border-radius:8px' // Object.is equality
+    1480|     ])('converts %s to pixels', async (className, expected) => {
+    1481|       expect(await styleFor(className)).toBe(expected);
+ FAIL  src/components/tailwind/tailwind.spec.tsx > Tailwind component > with pixelBasedPreset > converts rounded-4xl to pixels
+AssertionError: expected 'border-radius:2rem' to be 'border-radius:32px' // Object.is equality
+    1480|     ])('converts %s to pixels', async (className, expected) => {
+    1481|       expect(await styleFor(className)).toBe(expected);
+ FAIL  src/components/tailwind/tailwind.spec.tsx > Tailwind component > with pixelBasedPreset > converts max-w-md to pixels
+AssertionError: expected 'max-width:28rem' to be 'max-width:448px' // Object.is equality
+    1480|     ])('converts %s to pixels', async (className, expected) => {
+    1481|       expect(await styleFor(className)).toBe(expected);
+
+## B. Fix in place: same tests, then the whole Tailwind suite, typecheck and lint
+ ✓ src/components/tailwind/tailwind.spec.tsx > Tailwind component > with pixelBasedPreset > converts rounded to pixels 47ms
+ ✓ src/components/tailwind/tailwind.spec.tsx > Tailwind component > with pixelBasedPreset > converts rounded-sm to pixels 2ms
+ ✓ src/components/tailwind/tailwind.spec.tsx > Tailwind component > with pixelBasedPreset > converts rounded-md to pixels 2ms
+ ✓ src/components/tailwind/tailwind.spec.tsx > Tailwind component > with pixelBasedPreset > converts rounded-lg to pixels 1ms
+ ✓ src/components/tailwind/tailwind.spec.tsx > Tailwind component > with pixelBasedPreset > converts rounded-4xl to pixels 2ms
+ ✓ src/components/tailwind/tailwind.spec.tsx > Tailwind component > with pixelBasedPreset > converts max-w-md to pixels 1ms
+ ✓ src/components/tailwind/tailwind.spec.tsx > Tailwind component > with pixelBasedPreset > converts max-w-7xl to pixels 1ms
+ ✓ src/components/tailwind/tailwind.spec.tsx > Tailwind component > with pixelBasedPreset > does not leave rem in the radius or max-width scales 26ms
+ Test Files  1 passed (1)
+      Tests  8 passed | 57 skipped (65)
+
+### whole src/components/tailwind
+ Test Files  15 passed (15)
+      Tests  151 passed (151)
+### tsc --noEmit (packages/react-email)
+exit 0, no errors
+### biome check (changed files)
+Checked 64 files in 28ms. No fixes applied.
+
+NOT run: the rest of the monorepo's tests (for example packages/ui, which also uses pixelBasedPreset).

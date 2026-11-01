@@ -1,0 +1,23 @@
+evidence-04: SCOPE. Which of Tailwind's own theme scales are defined in rem/em, and which the preset now covers
+Captured 2026-11-01T19:20:56Z. Source: tailwindcss 4.1.18 theme.css, as resolved from packages/react-email.
+(evidence-02 was captured in another repo that resolved tailwindcss 4.3.3; the rem output matched in both, see evidence-01 and 03.)
+
+## spacing  (1 values)  COVERED by spacing (already in the preset)
+   (base)=0.25rem
+
+## breakpoint  (5 values)  NOT covered: max-w-screen-*; sm:/md: media queries (rem in a media query is a different case)
+   sm=40rem md=48rem lg=64rem xl=80rem 2xl=96rem
+
+## container  (13 values)  COVERED by maxWidth (this change); also drives w-md, min-w-md
+   3xs=16rem 2xs=18rem xs=20rem sm=24rem md=28rem lg=32rem xl=36rem 2xl=42rem 3xl=48rem 4xl=56rem 5xl=64rem 6xl=72rem 7xl=80rem
+
+## text  (13 values)  COVERED by fontSize (already in the preset)
+   xs=0.75rem sm=0.875rem base=1rem lg=1.125rem xl=1.25rem 2xl=1.5rem 3xl=1.875rem 4xl=2.25rem 5xl=3rem 6xl=3.75rem 7xl=4.5rem 8xl=6rem 9xl=8rem
+
+## tracking  (6 values)  NOT covered: letter-spacing in em
+   tighter=-0.05em tight=-0.025em normal=0em wide=0.025em wider=0.05em widest=0.1em
+
+## radius  (9 values)  COVERED by borderRadius (this change)
+   xs=0.125rem sm=0.25rem md=0.375rem lg=0.5rem xl=0.75rem 2xl=1rem 3xl=1.5rem 4xl=2rem (base)=0.25rem
+
+Scales not listed above use px, unitless or var() values in this theme.

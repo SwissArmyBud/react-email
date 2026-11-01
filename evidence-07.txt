@@ -1,0 +1,33 @@
+evidence-07: PROVENANCE AND REVIEW NOTES. How this change came about, what was verified, and what a reviewer should check by hand
+
+## How it was found
+- A Tailwind demo template in another project (mailjot) rendered `rounded-lg` as `border-radius:0.5rem` even with `pixelBasedPreset` applied. Reproduction in evidence-02.
+- Cause, read from react-email@6.11.6 source: `pixelBasedPreset` overrides only `theme.extend.fontSize` and `theme.extend.spacing` (evidence-02, section 1). Anything else Tailwind defines in rem is left alone (scan in evidence-04).
+
+## Public discussion checked (web search, not a GitHub issue search)
+- React Email Tailwind docs state the general rem problem and present `pixelBasedPreset` as the fix, without saying it is partial: https://react.email/docs/components/tailwind
+- Nearest upstream item: react-email 6.6.4 changelog, "Fix Tailwind pill utilities like `rounded-t-full` and `rounded-e-full` leaving an unrenderable `calc(infinity * 1px)`". A different radius bug, already fixed. https://github.com/resend/react-email/releases/tag/react-email%406.6.4 (also in packages/react-email/CHANGELOG.md, line 133 in 6.11.6)
+- Outlook on Windows ignores `border-radius` whatever the unit, so a pixel radius gives no rounded corners there. Stated by a React Email styling guide found in search; not verified independently.
+- No issue about this specific gap was found. The search did NOT query resend/react-email's issue tracker directly. Do that before filing (evidence-08 is the unfiled draft).
+
+## What was verified (all reproducible from this branch)
+- Before/after per class: evidence-02 (published package) and evidence-03 (this branch).
+- New tests fail without the fix (8 of 8) and pass with it; whole Tailwind suite 151 passing; tsc and biome clean: evidence-05.
+- Demo A/B, and that the only differences are the rem declarations: evidence-06.
+
+## What was NOT verified
+- Other packages that import `pixelBasedPreset` (for example packages/ui, which has Tailwind fixtures); their tests were not run.
+- Rendering in real email clients. The change is value-for-value what the rem resolves to at a 16px root, so it should look identical wherever rem already worked.
+- The branch name contains "2611". I do not know what that refers to and did not check it against an upstream issue or PR number.
+- tailwindcss versions differ between captures: 4.3.3 in the mailjot repo (evidence-02), 4.1.18 in this clone (evidence-03 onward). The rem output for the affected classes matched in both (evidence-01 was captured here, before the fix).
+
+## Things a reviewer should look at by hand
+1. `borderRadius.DEFAULT` was added because without it bare `rounded` stayed `0.25rem` (found while building the fix). Confirm 4px is the desired mapping.
+2. `maxWidth` is Tailwind's container scale, so `w-md`, `min-w-md` and similar change from rem to px as a side effect (evidence-03). Intended here, but it widens the change beyond the name `max-w-*`.
+3. Users who already set their own `theme.borderRadius` or `theme.maxWidth` still override these values, as before. Users on a custom root font size will see px where they used to get a scaled rem; that is the point of the preset, but it is a visible change.
+4. Not covered, deliberately (evidence-04): `max-w-screen-*` and `tracking-*`. Separately, `blur-sm` came out as `filter:blur(var(--blur-sm))` with an unresolved CSS variable (evidence-03). That looks like a different bug and is untouched by this change.
+5. The changeset is a `patch`. Whether this counts as a patch or a minor is a maintainer call.
+6. `demo/` is a PoC aid, not intended for upstream; drop it (and the README replacement) before opening a real PR. `demo/out/` is git-ignored.
+
+## Environment
+node v24.15.0; pnpm 11.0.0 via corepack; react-email package at commit 99548d91 (canary) plus this branch's changes.

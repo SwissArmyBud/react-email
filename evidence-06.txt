@@ -1,0 +1,21 @@
+evidence-06: DEMO. Output of packages/react-email/demo/ab.tsx, and the exact CSS difference between A (before) and B (after)
+Captured 2026-11-01T19:21:13Z. Reproduce: cd packages/react-email && npx tsx demo/ab.tsx
+
+## Console output
+A (before) rem/em values: max-width:28rem, border-radius:0.5rem, border-radius:0.375rem, border-radius:0.25rem
+B (after)  rem/em values: none
+Wrote demo/out/compare.html
+
+## Style declarations that differ (before.html vs after.html), one per line
+A (before)  border-radius:0.25rem
+A (before)  border-radius:0.375rem
+A (before)  border-radius:0.5rem
+B (after)   border-radius:4px
+B (after)   border-radius:6px
+B (after)   border-radius:8px
+A (before)  max-width:28rem
+B (after)   max-width:448px
+
+## Note
+Everything else in the two documents is byte-identical, so the fix changes only the rem declarations listed above. Compare: diff demo/out/before.html demo/out/after.html
+Identical outside those declarations: yes

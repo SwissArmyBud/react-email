@@ -1,0 +1,46 @@
+evidence-03: AFTER the fix (this branch)
+Captured 2026-11-01T19:20:36Z from packages/react-email on branch personal/aporter/2611-rem-from-pixelbasedpreset-demo, commit 99548d91 plus the staged working-tree changes.
+tailwindcss 4.1.18, node v24.15.0
+
+## Inlined style per class (pixelBasedPreset only; margins and base font-size omitted)
+Compare line by line with evidence-02. Lines still containing rem or em are listed at the end.
+
+rounded          border-radius:4px;
+rounded-xs       border-radius:2px;
+rounded-sm       border-radius:4px;
+rounded-md       border-radius:6px;
+rounded-lg       border-radius:8px;
+rounded-xl       border-radius:12px;
+rounded-2xl      border-radius:16px;
+rounded-3xl      border-radius:24px;
+rounded-4xl      border-radius:32px;
+rounded-full     border-radius:9999px;
+rounded-t-lg     border-top-left-radius:8px;border-top-right-radius:8px;
+rounded-e-full   border-start-end-radius:9999px;border-end-end-radius:9999px;
+max-w-3xs        max-width:256px;
+max-w-2xs        max-width:288px;
+max-w-xs         max-width:320px;
+max-w-sm         max-width:384px;
+max-w-md         max-width:448px;
+max-w-lg         max-width:512px;
+max-w-xl         max-width:576px;
+max-w-2xl        max-width:672px;
+max-w-3xl        max-width:768px;
+max-w-4xl        max-width:896px;
+max-w-5xl        max-width:1024px;
+max-w-6xl        max-width:1152px;
+max-w-7xl        max-width:1280px;
+w-md             width:448px;
+min-w-md         min-width:448px;
+max-w-screen-md  max-width:48rem;
+tracking-wide    letter-spacing:0.025em;
+tracking-tight   letter-spacing:-0.025em;
+blur-sm          filter:blur(var(--blur-sm));
+p-4              padding:16px;
+text-lg          font-size:18px;line-height:28px;
+w-96             width:384px;
+
+## Still emitting rem/em after the fix
+max-w-screen-md  max-width:48rem;
+tracking-wide    letter-spacing:0.025em;
+tracking-tight   letter-spacing:-0.025em;

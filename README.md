@@ -1,120 +1,95 @@
-![React email cover](https://react.email/static/covers/react-email.png)
+# PoC: make `pixelBasedPreset` convert border radius and max width to pixels
 
-<div align="center"><strong>React Email</strong></div>
-<div align="center">The next generation of writing emails.<br />High-quality, unstyled components for creating emails.</div>
-<br />
-<div align="center">
-<a href="https://react.email">Website</a>
-<span> · </span>
-<a href="https://github.com/resend/react-email">GitHub</a>
-</div>
+This branch (`personal/aporter/2611-rem-from-pixelbasedpreset-demo`) is a proof of concept, not an upstream-ready PR. It replaces the repository README so the demo is the first thing you see. The upstream README is on `canary`.
 
-## Introduction
+## The problem
 
-A collection of high-quality, unstyled components for creating beautiful emails using React and TypeScript.
-It reduces the pain of coding responsive emails with dark mode support. It also takes care of inconsistencies between Gmail, Outlook, and other email clients for you.
+`pixelBasedPreset` is documented as the fix for Tailwind's `rem` units, which many email clients handle inconsistently. It only overrides `fontSize` and `spacing`. Other utilities that Tailwind defines in `rem` still reach the inlined CSS unchanged:
 
-## Why
+| Class | Before | After (this branch) |
+| --- | --- | --- |
+| `rounded`, `rounded-sm` | `0.25rem` | `4px` |
+| `rounded-md` | `0.375rem` | `6px` |
+| `rounded-lg` | `0.5rem` | `8px` |
+| `max-w-md` | `28rem` | `448px` |
+| `max-w-7xl` | `80rem` | `1280px` |
 
-We believe that email is an extremely important medium for people to communicate. However, we need to stop developing emails like 2010, and rethink how email can be done in 2026 and beyond. Email development needs a revamp. A renovation. Modernized for the way we build web apps today.
+## The fix
 
-## Install
+[`packages/react-email/src/components/tailwind/tailwind.tsx`](packages/react-email/src/components/tailwind/tailwind.tsx) adds two scales to `pixelBasedPreset`:
 
-```sh
-npm i react-email@latest
-```
+- `borderRadius`: `DEFAULT` and `xs` to `4xl`.
+- `maxWidth`: `3xs` to `7xl`.
 
-## Getting started
+Each value is what the `rem` resolves to at a 16px root. `maxWidth` is Tailwind's container scale, so `w-md` and the other container-sized widths change too (`28rem` to `448px`).
 
-Define your email template with React, include styles and our components where needed.
+Plus: regression tests in `tailwind.spec.tsx`.
 
-```jsx
-import { Button } from "react-email";
+## Walk through the demo
 
-export default function Email() {
-  return (
-    <Button href="https://example.com" style={{ color: "#61dafb" }}>
-      Click me
-    </Button>
-  );
-};
-```
+You need Node 20.19 or newer and pnpm (`npm install -g pnpm`).
 
-## Using with AI
+1. Install the package's dependencies and build the render package it imports:
 
-Install the React Email skill to teach your coding agent (Claude Code, Codex, Cursor, GitHub Copilot, and others) how to build emails with React Email:
+   ```sh
+   pnpm install --filter react-email... --frozen-lockfile
+   pnpm --filter @react-email/render build
+   ```
 
-```sh
-npx skills add resend/react-email
-```
+2. Run the A/B demo, from `packages/react-email`:
 
-The docs are also available for LLMs at [react.email/docs/llms.txt](https://react.email/docs/llms.txt).
+   ```sh
+   cd packages/react-email
+   npx tsx demo/ab.tsx
+   ```
 
-## Components
+   It renders the same receipt email twice, in place, and prints the `rem`/`em` values found in each:
 
-A set of standard components to help you build amazing emails without having to deal with the mess of creating table-based layouts and maintaining archaic markup.
+   ```
+   A (before) rem/em values: max-width:28rem, border-radius:0.5rem, border-radius:0.375rem, border-radius:0.25rem
+   B (after)  rem/em values: none
+   ```
 
-- [Html](https://github.com/resend/react-email/tree/main/packages/react-email/src/components/html)
-- [Head](https://github.com/resend/react-email/tree/main/packages/react-email/src/components/head)
-- [Button](https://github.com/resend/react-email/tree/main/packages/react-email/src/components/button)
-- [Container](https://github.com/resend/react-email/tree/main/packages/react-email/src/components/container)
-- [CodeBlock](https://github.com/resend/react-email/tree/main/packages/react-email/src/components/code-block)
-- [CodeInline](https://github.com/resend/react-email/tree/main/packages/react-email/src/components/code-inline)
-- [Column](https://github.com/resend/react-email/tree/main/packages/react-email/src/components/column)
-- [Row](https://github.com/resend/react-email/tree/main/packages/react-email/src/components/row)
-- [Font](https://github.com/resend/react-email/tree/main/packages/react-email/src/components/font)
-- [Heading](https://github.com/resend/react-email/tree/main/packages/react-email/src/components/heading)
-- [Divider](https://github.com/resend/react-email/tree/main/packages/react-email/src/components/hr)
-- [Image](https://github.com/resend/react-email/tree/main/packages/react-email/src/components/img)
-- [Link](https://github.com/resend/react-email/tree/main/packages/react-email/src/components/link)
-- [Markdown](https://github.com/resend/react-email/tree/main/packages/react-email/src/components/markdown)
-- [Preview](https://github.com/resend/react-email/tree/main/packages/react-email/src/components/preview)
-- [Section](https://github.com/resend/react-email/tree/main/packages/react-email/src/components/section)
-- [Tailwind](https://github.com/resend/react-email/tree/main/packages/react-email/src/components/tailwind)
-- [Paragraph](https://github.com/resend/react-email/tree/main/packages/react-email/src/components/text)
-- [Body](https://github.com/resend/react-email/tree/main/packages/react-email/src/components/body)
+   - **A (before)** is the preset with the new `borderRadius` and `maxWidth` scales removed, which is what shipped until now.
+   - **B (after)** is the preset as it is on this branch.
 
-## Editor
+3. Open `packages/react-email/demo/out/compare.html` in a browser for the two renders side by side. `before.html` and `after.html` in the same folder are the raw HTML. They look the same in a browser, since a modern browser resolves `rem` fine; the difference is in the CSS values, which is what clients with weak `rem` support see.
 
-React Email also provides an Editor built on top of [TipTap](https://tiptap.dev/) and [ProseMirror](https://prosemirror.net/), It serializes to React Email components, and exports email-ready HTML and plain text.
+4. Change the demo email and rerun: edit the classes in `Email` in [`packages/react-email/demo/ab.tsx`](packages/react-email/demo/ab.tsx) (try `rounded-xl`, `max-w-2xl`, `rounded`) and run it again.
 
-See the [Editor documentation](https://react.email/docs/editor) for more details.
+5. Run the tests, from `packages/react-email`:
 
-## Integrations
+   ```sh
+   npx vitest run src/components/tailwind
+   npx tsc --noEmit
+   ```
 
-Emails built with React Email can be converted into HTML and sent using any email service provider. Here are some examples:
+   To see the tests catch the bug, remove the `borderRadius` block from the preset and rerun; the `converts ... to pixels` cases fail.
 
-- [Resend](https://github.com/resend/react-email/tree/main/examples/resend)
-- [Nodemailer](https://github.com/resend/react-email/tree/main/examples/nodemailer)
-- [SendGrid](https://github.com/resend/react-email/tree/main/examples/sendgrid)
-- [MailerSend](https://github.com/resend/react-email/tree/main/examples/mailersend)
-- [Mailgun](https://github.com/resend/react-email/tree/main/examples/mailgun)
-- [Postmark](https://github.com/resend/react-email/tree/main/examples/postmark)
-- [AWS SES](https://github.com/resend/react-email/tree/main/examples/aws-ses)
-- [Azure Communication Email](https://github.com/resend/react-email/tree/main/examples/azure-communication-email)
-- [Plunk](https://github.com/resend/react-email/tree/main/examples/plunk)
-- [Scaleway](https://github.com/resend/react-email/tree/main/examples/scaleway)
+`demo/out/` is the generated and git-ignored output, `demo/poc_out/` is the same files but included as PoC evidence and is not ignored.
 
-## Support
+## Evidence for review
 
-All components were tested using the most popular email clients.
+Captured output, each regenerated from a fresh run. Read in order; each file starts with how it was produced.
 
-| <img src="https://react.email/static/icons/gmail.svg" width="48px" height="48px" alt="Gmail logo"> | <img src="https://react.email/static/icons/apple-mail.svg" width="48px" height="48px" alt="Apple Mail"> | <img src="https://react.email/static/icons/outlook.svg" width="48px" height="48px" alt="Outlook logo"> | <img src="https://react.email/static/icons/yahoo-mail.svg" width="48px" height="48px" alt="Yahoo! Mail logo"> | <img src="https://react.email/static/icons/hey.svg" width="48px" height="48px" alt="HEY logo"> | <img src="https://react.email/static/icons/superhuman.svg" width="48px" height="48px" alt="Superhuman logo"> |
-| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Gmail ✔                                                                                           | Apple Mail ✔                                                                                           | Outlook ✔                                                                                             | Yahoo! Mail ✔                                                                                                | HEY ✔                                                                                         | Superhuman ✔                                                                                                |
+| File | What it shows |
+| --- | --- |
+| `evidence-02.txt` | Baseline on the published `react-email@6.11.6`: the preset only overrides `fontSize` and `spacing`, and the per-class output still has rem. |
+| `evidence-03.txt` | The same classes on this branch, with the remaining rem/em output listed. |
+| `evidence-04.txt` | Scope: every rem/em scale in Tailwind's theme, marked covered or not covered. |
+| `evidence-05.txt` | The new tests fail 8 of 8 with the fix removed and pass with it; full Tailwind suite, `tsc` and `biome` results. |
+| `evidence-06.txt` | Demo output and the exact CSS declarations that differ between A and B. |
+| `evidence-07.txt` | Provenance, public discussion found, what was and was not verified, and points to check by hand. |
+| `evidence-08-issue-draft.md` | The drafted, unfiled upstream issue. |
 
-## Development workflow
+## What this does not fix
 
-1. [Setting up your development environment](https://react.email/docs/contributing/development-workflow/1-setup)
-2. [Running tests](https://react.email/docs/contributing/development-workflow/2-running-tests)
-3. [Linting](https://react.email/docs/contributing/development-workflow/3-linting)
-4. [Building](https://react.email/docs/contributing/development-workflow/4-building)
-5. [Writing documentation](https://react.email/docs/contributing/development-workflow/5-writing-docs)
+- Other `rem` or `em` output is untouched, for example `max-w-screen-*` (`48rem`) and `tracking-*` (`0.025em`). They are outside the scales above.
+- Outlook on Windows ignores `border-radius` whatever the unit, so a pixel radius does not make rounded corners appear there.
+- Users who set their own `theme.borderRadius` or `theme.maxWidth` override these values, as before.
+- Only `packages/react-email` was tested. Other packages that use the preset (for example `packages/ui`) were not run.
 
-## Contributing
+## Open points for upstream
 
-- [Contribution Guide](https://react.email/docs/contributing)
-
----
-
-Brought to you by [Resend](https://resend.com), MIT License.
+- Whether pinning these scales belongs in the preset, or the docs should say the preset is partial and show how to extend it.
+- Whether to cover more scales; a scan of Tailwind's `rem` theme values would settle it.

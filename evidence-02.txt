@@ -1,0 +1,23 @@
+evidence-02: BASELINE on the published package (before the fix)
+Captured 2026-11-01T19:20:36Z from the mailjot repo, using the published react-email, not this branch.
+react-email 6.11.6, tailwindcss 4.3.3, node v24.15.0
+
+## 1. What the published pixelBasedPreset overrides (top-level keys under theme.extend)
+fontSize, spacing
+
+## 2. Inlined style per class (pixelBasedPreset only; margins and base font-size omitted)
+rounded          border-radius:0.25rem;
+rounded-sm       border-radius:0.25rem;
+rounded-md       border-radius:0.375rem;
+rounded-lg       border-radius:0.5rem;
+rounded-2xl      border-radius:1rem;
+rounded-full     border-radius:9999px;
+max-w-md         max-width:28rem;
+max-w-7xl        max-width:80rem;
+max-w-screen-md  max-width:48rem;
+w-96             width:384px;
+h-10             height:40px;
+w-md             width:28rem;
+p-4              padding:16px;
+text-lg          font-size:18px;line-height:28px;
+tracking-wide    letter-spacing:0.025em;
